@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Poppins", "Mukta", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Mukta", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fde4e4;
+  --color-brand-200: #fbcdcd;
+  --color-brand-300: #f7a9a9;
+  --color-brand-400: #f17878;
+  --color-brand-500: #e74f4f;
+  --color-brand-600: #d12f2f;
+  --color-brand-700: #a31621;
+  --color-brand-800: #7f1d1d;
+  --color-brand-900: #631417;
+  --color-brand-950: #3d0a0d;
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+  --color-gold-700: #b45309;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #ffffff;
+  color: var(--color-stone-800);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background-color: var(--color-gold-300); color: var(--color-stone-950); }
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--color-gold-500);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background-color: var(--color-stone-950);
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 0.5rem 0;
+}
+.skip-link:focus { left: 0; }
+
+.hero-bg {
+  background:
+    radial-gradient(ellipse 60% 50% at 85% 10%, rgba(251, 191, 36, 0.14), transparent),
+    radial-gradient(ellipse 50% 60% at 10% 90%, rgba(251, 191, 36, 0.08), transparent),
+    linear-gradient(135deg, #3d0a0d 0%, #631417 45%, #1c1917 100%);
+}
+
+.page-hero {
+  background:
+    radial-gradient(ellipse 55% 60% at 90% 20%, rgba(251, 191, 36, 0.12), transparent),
+    linear-gradient(120deg, #3d0a0d 0%, #7f1d1d 55%, #1c1917 100%);
+  border-bottom: 4px solid var(--color-gold-400);
+}
+
+.road-divider {
+  height: 10px;
+  background-image: repeating-linear-gradient(90deg, var(--color-gold-400) 0px, var(--color-gold-400) 44px, transparent 44px, transparent 72px);
+  opacity: 0.9;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.7s ease-out both; }
+.anim-delay-1 { animation-delay: 0.1s; }
+.anim-delay-2 { animation-delay: 0.2s; }
+.anim-delay-3 { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-fade-up { animation: none; }
+}
