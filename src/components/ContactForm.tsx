@@ -18,7 +18,7 @@ function validate(values: FormState): FormErrors {
   return errors;
 }
 
-export default function ContactForm({ defaultCourse = '', heading = 'Send an Enquiry', subheading = 'Fill in the form and the school will contact you back. For an immediate response, call the school directly.' }: ContactFormProps) {
+export default function ContactForm({ defaultCourse = '', heading = 'Send an Enquiry', subheading = 'Fill in the form and we will contact you back. You will be redirected to WhatsApp to send your enquiry.' }: ContactFormProps) {
   const [values, setValues] = useState<FormState>({ name: '', phone: '', course: defaultCourse, message: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({});
@@ -45,18 +45,38 @@ export default function ContactForm({ defaultCourse = '', heading = 'Send an Enq
     const v = validate(values);
     setErrors(v);
     setTouched({ name: true, phone: true, course: true, message: true });
+    
+    // Stop if there are validation errors (e.g. missing name or invalid phone)
     if (Object.keys(v).length > 0) return;
+    
     setStatus('sending');
     setServerError('');
+    
     try {
+      // 1. Send data to your Supabase backend
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: values.name.trim(), phone: values.phone.trim(), course: values.course, message: values.message.trim() }),
       });
+      
       const data = (await res.json().catch(() => ({}))) as { error?: string };
+      
+      // 2. If the API fails, throw an error to show the red box
       if (!res.ok) throw new Error(data.error || 'Could not submit your enquiry. Please try again.');
+      
+      // 3. API Success! Set success state for the UI
       setStatus('success');
+      
+      // 4. Redirect to WhatsApp with the formatted message
+      const whatsappText = `Hello Prabhu Motor Training School,%0A%0AI have a new enquiry:%0A*Name:* ${values.name.trim()}%0A*Phone:* ${values.phone.trim()}%0A*Course:* ${values.course}%0A*Message:* ${values.message.trim() || 'No additional message'}`;
+      
+      // Use your business number, assuming it's stored in BUSINESS.phone, otherwise hardcode '918005022800'
+      const rawNumber = BUSINESS.phone.replace(/\D/g, ''); 
+      const whatsappNumber = rawNumber.startsWith('91') ? rawNumber : `91${rawNumber}`;
+      
+      window.open(`https://wa.me/${whatsappNumber}?text=${whatsappText}`, '_blank');
+      
     } catch (err) {
       setStatus('error');
       setServerError(err instanceof Error ? err.message : 'Could not submit your enquiry. Please call us directly.');
@@ -77,9 +97,9 @@ export default function ContactForm({ defaultCourse = '', heading = 'Send an Enq
     return (
       <div role="alert" aria-live="polite" className="rounded-2xl border-2 border-green-700 bg-green-50 p-8 text-center">
         <CircleCheck className="mx-auto h-12 w-12 text-green-700" aria-hidden="true" />
-        <h2 className="mt-4 font-display text-2xl font-bold text-stone-950">Enquiry Received. Thank You!</h2>
-        <p className="mx-auto mt-2 max-w-md text-base text-stone-700">Thank you, {values.name.trim() || 'friend'}. Your enquiry about <strong>{values.course}</strong> has been recorded. The school will contact you back on <strong>{values.phone.trim()}</strong>.</p>
-        <p className="mx-auto mt-2 max-w-md text-[15px] text-stone-600">Need an immediate answer? Call the school directly on <a href={BUSINESS.telLink} className="font-bold text-brand-800 underline">{BUSINESS.phone}</a>.</p>
+        <h2 className="mt-4 font-display text-2xl font-bold text-stone-950">Redirecting to WhatsApp...</h2>
+        <p className="mx-auto mt-2 max-w-md text-base text-stone-700">Thank you, {values.name.trim() || 'friend'}. We are opening WhatsApp so you can send us your enquiry about <strong>{values.course}</strong>.</p>
+        <p className="mx-auto mt-2 max-w-md text-[15px] text-stone-600">If WhatsApp did not open, you can call us directly on <a href={BUSINESS.telLink} className="font-bold text-brand-800 underline">{BUSINESS.phone}</a>.</p>
         <button type="button" onClick={reset} className="mt-6 inline-flex min-h-[48px] items-center rounded-lg border-2 border-brand-700 px-6 py-2.5 font-bold text-brand-800 hover:bg-brand-50">Send Another Enquiry</button>
       </div>
     );
@@ -120,9 +140,9 @@ export default function ContactForm({ defaultCourse = '', heading = 'Send an Enq
           </div>
         )}
         <button type="submit" disabled={status === 'sending'} className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-lg bg-brand-700 px-7 py-3 text-base font-bold text-white shadow transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
-          {status === 'sending' ? (<><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" /> Sending...</>) : (<><Send className="h-5 w-5" aria-hidden="true" /> Submit Enquiry</>)}
+          {status === 'sending' ? (<><span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" /> Processing...</>) : (<><Send className="h-5 w-5" aria-hidden="true" /> Submit & Continue to WhatsApp</>)}
         </button>
-        <p className="text-sm text-stone-500">By submitting, you agree to be contacted by the school on the phone number provided.</p>
+        <p className="text-sm text-stone-500">By submitting, you will be redirected to WhatsApp to send your enquiry.</p>
       </form>
     </div>
   );
